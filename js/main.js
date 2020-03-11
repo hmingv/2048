@@ -43,6 +43,25 @@ game = {
 	},
 	
 	/**
+	 * 检测游戏是否结束
+	 */
+	isOver: function () {
+		let data = game.data;
+		for (let line = 0; line < 4; line++) {
+			for (let column = 0; column < 4; column++) {
+				if (data[line][column] == 0) {
+					return false;
+				} else if (column < 3 && data[line][column] == data[line][column + 1]) {
+					return false;
+				} else if (line < 3 && data[line][column] == data[line + 1][column]) {
+					return false;
+				}
+			}
+		}
+		return true;
+	},
+	
+	/**
 	 * 移动监听事件
 	 */
 	moveEvent: function() {
@@ -89,6 +108,10 @@ game = {
 					setTimeout(function() {
 						game.randomNum();
 					}, 200);
+				} else {
+					if (game.isOver()) {
+						game.status = false;
+					}
 				}
 			} else {
 				alert('游戏暂停或结束！');
@@ -102,15 +125,33 @@ game = {
 	 * @param {Int} column
 	 */
 	randomNum: function() {
-		// 无限循环，直到赋值完成
-		// 获取随机位置 line 行
-		line = Math.floor(Math.random() * 4);
-		// 获取随机位置 column 列
-		column = Math.floor(Math.random() * 4);
 
+		let data = game.data;
+		let usableDataIndex = new Array();
+		for (let line = 0; line < 4; line++) {
+			for (let column = 0; column < 4; column++) {
+				if (data[line][column] == 0) 
+				{
+					let usable = new Array();
+					usable.push(line);
+					usable.push(column);
+					usableDataIndex.push(usable);
+				}
+			}
+		}
+		
+		let length = usableDataIndex.length;
+		let randomIndex = Math.floor(Math.random() * length);
+
+		if (length < 1) {
+			return;
+		}
+
+		let line = usableDataIndex[randomIndex][0];
+		let column = usableDataIndex[randomIndex][1];
 		// 当前位置为0，才可赋值
 		let value = game.data[line][column];
-		if (value != 0) {
+		if (value == undefined) {
 			game.randomNum();
 		} else {
 			// 仅随机 2或4
@@ -120,6 +161,7 @@ game = {
 			= $('.params_box')[0].innerHTML + 
 			`<div id='position_${line}${column}' class='cell num${game.data[line][column]}'></div>`;
 		}
+
 	},
 	
 	/**
@@ -194,11 +236,7 @@ game = {
 				$(`#position_${posi}`).setAttribute('class', `cell num${afterValue}`);
 				$(`#position_${posi}`).setAttribute('id', `position_${line}${column}`);
 				if (box != null) {
-					setTimeout(function() {
-						if (box != null) {
-							box.parentNode.removeChild(box);  
-						}
-					}, 100);
+					box.parentNode.removeChild(box);
 				}
 			}
 		// 定位索引不存在，表示此处无变更		
